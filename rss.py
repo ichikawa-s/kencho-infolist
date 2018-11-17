@@ -15,48 +15,28 @@ RSS_URL = "http://www.pref.kanagawa.jp/menu/4/menu4.xml"
 # RSSから取得する
 feed = feedparser.parse(RSS_URL)
 
+# 結果保存用辞書オブジェクト
 dict = {}
 
 # 記事の情報をひとつずつ取り出す
 for entry in feed.entries:
 
-    # ダンプ
-    # pprint( entry )
-
-    # タイトルを出力
-    # print( entry.title )
-    # print( entry.link )
-    # print( entry.updated )
+    # pprint( entry ) # ダンプ
 
     # URLにアクセスする 戻り値にはアクセスした結果やHTMLなどが入ったinstanceが帰ってきます
     # instance = urllib2.urlopen(url)
-    # instance = urllib.request.urlopen(url)
-
-    # instance = urllib.request.urlopen( entry.url )
     instance = urllib.request.urlopen( entry.link )
 
     # instanceからHTMLを取り出して、BeautifulSoupで扱えるようにパースします
     soup = BeautifulSoup(instance, "html.parser")
 
-    # 例としてタイトル要素のみを出力する
-    # print(soup.title)
-
-    # ダンプ
-    # pprint( soup )
+    # pprint( soup ) # ダンプ
 
     # 1日1回RSSを取得してリンクとIDと更新日時をDBに登録する
+    # リンクとIDと更新日時。画像も取得してサムネイル作成に使用する
 
-    # リンクとIDと更新日時だけでOKか。
-    # と思ったけど画像も取得してサムネイル作成に使用すればよいのでは
-
-    # 画像
-    # img = soup.find("img")
-    # TDOD
-    # imgタグが属すcss class名、img srcのパスのホスト名、などで取得する画像を判定する
-    # imgParentDom = soup.find( "div", class_="img_cap")
-    # imgParentDom = soup.find( "div", class_="main_box clearfix")
-    # imgParentDom = soup.find( class_="clearfix" )
-    imgParentDom = soup.find( id="main_body" )
+    # サムネイル画像になりそうなimgタグが属す要素
+    imgParentDom = soup.find( id="main_body" ) # TODO RSSによって変化するため変数にする
     # pprint( imgParentDom )
 
     imgTag = None
@@ -69,9 +49,6 @@ for entry in feed.entries:
 
     pprint( { "img dom" : imgTag } )
     pprint( { "img src" : imgSrc } )
-    # これでもできるがセレクタでできないか
-    # for child in imgParentDom.children:
-    #     print(child)
 
     # 結果保存用変数
     result = {
@@ -85,9 +62,9 @@ for entry in feed.entries:
                     "img src" : imgSrc
               }
 
-    # 結果をダンプ出力
-    pprint( entry.id )
-    dict[ entry.id ] = result
+
+    pprint( entry.id ) # 結果をダンプ出力
+    dict[ entry.id ] = result # TODO 同一キーなら更新日時が新しいフィードを残す
     # break #デバッグ時は１要素で十分
 
 # ループ抜けてからダンプ
